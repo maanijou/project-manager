@@ -64,7 +64,7 @@ func TestGetEmployeeData(t *testing.T) {
 	}
 }
 
-func TestGetEmployeeByIDHandler(t *testing.T) {
+func TestGetEmployees(t *testing.T) {
 	emps, err := employee.GetEmployees()
 	if err != nil {
 		t.Errorf("Error in getting employees %v", err)
@@ -73,4 +73,12 @@ func TestGetEmployeeByIDHandler(t *testing.T) {
 		t.Errorf("Error in getting employees, expected 100 employees got %d", len(emps.Data))
 	}
 
+}
+
+func TestGetEmployeeByIDHandler(t *testing.T) {
+	t.Error("Not implemented")
+}
+
+func TestGetEmployeesHandler(t *testing.T) {
+	t.Error("Not implemented")
 }
