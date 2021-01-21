@@ -2,8 +2,11 @@ package employee_test
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/gorilla/mux"
 	"github.com/maanijou/project-manager/employee"
 )
 
@@ -76,7 +79,27 @@ func TestGetEmployees(t *testing.T) {
 }
 
 func TestGetEmployeeByIDHandler(t *testing.T) {
-	t.Error("Not implemented")
+	sm := mux.NewRouter().StrictSlash(true) // ignoring trailing slash
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/employees/{user_id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", employee.GetEmployeeByID)
+	req, err := http.NewRequest("GET", "/employees/a0d5e87a-af04-473d-b1f5-3105bbf986c8", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	handler := http.Handler(getRouter)
+	handler.ServeHTTP(rr, req)
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	// Check the response body is what we expect.
+	expected := `{"id":"a0d5e87a-af04-473d-b1f5-3105bbf986c8","first_name":"Celia","last_name":"Ladbrook","email":"celia.ladbrook@acme.com","department":"sales","role":"employee"}`
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
 }
 
 func TestGetEmployeesHandler(t *testing.T) {

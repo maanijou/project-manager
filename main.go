@@ -9,17 +9,20 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/maanijou/project-manager/employee"
 )
 
 func main() {
 	log.Println("Running Project Manager app.")
 
 	sm := mux.NewRouter().StrictSlash(true) // ignoring trailing slash
+	sm = sm.PathPrefix("/api/v1/").Subrouter()
 	sm.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status": "ok"}`))
 	})
+	employee.SetupRoutes(sm)
 
 	s := http.Server{
 		Addr:         ":8080",           // configure the bind address
