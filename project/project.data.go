@@ -85,7 +85,7 @@ func insertProject(project entity.Project) (int, error) {
 		return 0, err
 	}
 	for _, id := range participantIDS {
-		stm, err := database.DbConn.Prepare(`INSERT INTO public.project_employee(
+		stm, err := database.DbConn.Prepare(`INSERT INTO project_employee(
 			project_id, employee_id)
 			VALUES ($1, $2);`)
 		if err != nil {
@@ -200,6 +200,132 @@ func removeProject(productID int) error {
 	_, err := database.DbConn.ExecContext(ctx, `DELETE FROM project where id = $1 RETURNING id`, productID)
 	if err != nil {
 		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+// updateProject is used to just update the project, not its participants
+func updateProject(project entity.Project) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if project.ID == 0 || *&project.ID == 0 {
+		return -1, errors.New("product has invalid ID")
+	}
+
+	stm, err := database.DbConn.Prepare(`UPDATE project
+	SET id=$1, name=$2, state=$3, progress=$4, owner=$5
+	WHERE project.id = $6 RETURNING id;`)
+	if err != nil {
+		log.Printf("Error inserting project %v\n", err)
+		return 0, err
+	}
+	lastInsertID := 0
+	err = stm.QueryRowContext(ctx, project.ID,
+		project.Name,
+		project.State.Int(),
+		project.Progress,
+		project.Owner.ID,
+		project.ID).Scan(&lastInsertID)
+
+	if err != nil {
+		log.Println(err.Error())
+		return lastInsertID, err
+	}
+	return lastInsertID, err
+}
+
+func addParticipant(projectID int, participants []entity.Employee) (int, error) {
+	project, err := getProject(projectID)
+	if err != nil {
+		return 0, err
+	}
+	owner := project.Owner
+	wg := sync.WaitGroup{}
+	var mu sync.Mutex
+	var participantIDS []string
+
+	for _, emp := range participants {
+		log.Println(emp.ID)
+		wg.Add(1)
+		go func(ee entity.Employee, safe *sync.Mutex) {
+			e, err := employee.GetEmployee(ee.ID)
+			if err != nil {
+				log.Printf("Error in geting employee using uuid %v", project.Owner.ID)
+				wg.Done()
+				return
+			}
+			if e.Department != owner.Department {
+				log.Printf("Participant department is different from the owner %s != %s\n", e.Department, owner.Department)
+				wg.Done()
+				return
+			}
+			_, err = employee.InsertEmployee(&ee)
+			if err != nil {
+				if strings.Contains(err.Error(), "duplicate key") {
+					mu.Lock()
+					participantIDS = append(participantIDS, ee.ID)
+					mu.Unlock()
+				}
+				wg.Done()
+				return
+			}
+			mu.Lock()
+			participantIDS = append(participantIDS, ee.ID)
+			mu.Unlock()
+			wg.Done()
+		}(emp, &mu)
+	}
+	wg.Wait()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	count := 0
+	for _, id := range participantIDS {
+		stm, err := database.DbConn.Prepare(`INSERT INTO project_employee(
+			project_id, employee_id)
+			VALUES ($1, $2);`)
+		if err != nil {
+			log.Printf("Error inserting project %v\n", err)
+			return 0, err
+		}
+		_, err = stm.ExecContext(ctx, project.ID, id)
+		if err != nil {
+			if !strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+				log.Printf("Error in inserting relation %d, %s %v", project.ID, id, err)
+				return 0, err
+			}
+			continue
+		}
+		count = count + 1
+	}
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func removeParticipant(projectID int, participantID string) error {
+	_, err := getProject(projectID)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stm, err := database.DbConn.Prepare(`DELETE FROM project_employee 
+	WHERE project_employee.project_id = $1 and
+	project_employee.employee_id = $2`)
+	if err != nil {
+		log.Printf("Error removing project %v\n", err)
+		return err
+	}
+	_, err = stm.ExecContext(ctx, projectID, participantID)
+	if err != nil {
+		log.Printf("Error removing project %v\n", err)
 		return err
 	}
 	return nil
