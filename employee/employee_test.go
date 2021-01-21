@@ -44,3 +44,11 @@ func TestEmployeeStruct(t *testing.T) {
 	}
 
 }
+
+func TestGetEmployeeData(t *testing.T) {
+	t.Errorf("Not implemented\n")
+}
+
+func TestGetEmployeeByIDHandler(t *testing.T) {
+	t.Errorf("Not implemented\n")
+}
