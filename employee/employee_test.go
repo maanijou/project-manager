@@ -2,8 +2,11 @@ package employee_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/gorilla/mux"
@@ -103,5 +106,59 @@ func TestGetEmployeeByIDHandler(t *testing.T) {
 }
 
 func TestGetEmployeesHandler(t *testing.T) {
-	t.Error("Not implemented")
+	sm := mux.NewRouter().StrictSlash(true) // ignoring trailing slash
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/employees", employee.GetAllEmployees)
+
+	// table tests
+	scenarios := []struct {
+		page         string
+		limit        string
+		expect       int
+		expectAnswer string
+	}{
+		{page: "4", limit: "2", expect: 2},
+		{page: "12", limit: "9", expect: 1, expectAnswer: "Jackie"},
+		{page: "12", limit: "9", expect: 1},
+		{page: "", limit: "2", expect: 2},
+		{page: "", limit: "", expect: 10},
+	}
+	for i, s := range scenarios {
+		req, err := http.NewRequest(
+			"GET",
+			fmt.Sprintf("/employees?page=%s&limit=%s", s.page, s.limit),
+			nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rr := httptest.NewRecorder()
+		handler := http.Handler(getRouter)
+		handler.ServeHTTP(rr, req)
+		_, errPage := strconv.Atoi(s.page)
+		_, errLimit := strconv.Atoi(s.limit)
+		if status := rr.Code; errPage == nil &&
+			errLimit == nil &&
+			status != http.StatusOK {
+			t.Errorf("handler returned wrong status code: got %v want %v",
+				status, http.StatusOK)
+			continue
+		}
+
+		// Check the response body is what we expect.
+		var employees employee.Employees
+		err = json.Unmarshal(rr.Body.Bytes(), &employees)
+		if err != nil {
+			t.Errorf("Error Unmarshaling json response in Scenario %d:", i)
+		}
+
+		if len(employees.Data) != s.expect {
+			t.Errorf("handler returned unexpected body: got %v employees want %v employees",
+				len(employees.Data), s.expect)
+		}
+		if len(s.expectAnswer) > 0 && len(employees.Data) > 0 && !strings.EqualFold(employees.Data[0].FirstName, s.expectAnswer) {
+			t.Errorf("handler returned unexpected body: got %v want %v",
+				employees.Data[0].FirstName, s.expectAnswer)
+		}
+	}
+
 }
