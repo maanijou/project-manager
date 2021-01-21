@@ -5,12 +5,15 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
 	log.Println("Running Project Manager app.")
 
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	sm := mux.NewRouter().StrictSlash(true) // ignoring trailing slash
+	sm.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status": "ok"}`))
@@ -18,6 +21,7 @@ func main() {
 
 	s := http.Server{
 		Addr:         ":8080",           // configure the bind address
+		Handler:      sm,                // set the default handler
 		ReadTimeout:  5 * time.Second,   // max time to read request from the client
 		WriteTimeout: 10 * time.Second,  // max time to write response to the client
 		IdleTimeout:  120 * time.Second, // max time for connections using TCP Keep-Alive
