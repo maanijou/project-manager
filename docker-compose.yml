@@ -1,5 +1,23 @@
 version: '3'
 services:
+  go:
+    build: 
+      context:
+        ./
+      dockerfile: 
+        ./devops/go/Dockerfile
+    environment:
+      - HOST_NAME=database
+    depends_on:
+      - database
+    expose:
+      - 3000
+    ports:
+      - 3000:8080
+    networks:
+      - postgres
+    volumes:
+      - govolume:/build/
   database:
     container_name: project_postgres
     build: 
@@ -39,3 +57,4 @@ networks:
 volumes:
   pgadmin: # named volumes can be managed easier using docker-compose
   pg:
+  govolume:

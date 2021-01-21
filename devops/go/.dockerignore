@@ -1,0 +1,14 @@
+#Ignore the devops directory
+devops/
+
+#Ignoring the password file
+database.env
+
+#Ignoring git and cache folders
+.git
+.cache
+docker-compose
+
+#Ignoring all the markdown and class files
+*.md
+**/*.class
