@@ -101,3 +101,106 @@ func insertProject(project entity.Project) (int, error) {
 
 	return lastInsertID, nil
 }
+
+func getProjects(page, limit int) ([]entity.Project, error) {
+	if page < 1 || limit < 1 {
+		return nil, errors.New("Error in page or limit arguments")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	results, err := database.DbConn.QueryContext(ctx, `SELECT id, name, state, progress, owner
+	FROM public.project
+	ORDER BY id ASC LIMIT $1 OFFSET $2
+	`, limit, (page-1)*limit)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	defer results.Close()
+	projects := make([]entity.Project, 0)
+	for results.Next() {
+		var project entity.Project
+		var state *int
+		results.Scan(&project.ID,
+			&project.Name,
+			&state,
+			&project.Progress,
+			&project.Owner.ID)
+		project.State = entity.StateName[*state]
+		owner, err := employee.GetEmployee(project.Owner.ID)
+		if err != nil {
+			log.Printf("Error in geting employee using uuid %v", project.Owner.ID)
+			return nil, err
+		}
+		project.Owner = *owner
+		projects = append(projects, project)
+	}
+	// TODO Just ignore the participantsin for now. They can use /project/{id}
+	// without preloading participants
+	return projects, nil
+}
+
+func getProject(projectID int) (*entity.Project, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	row := database.DbConn.QueryRowContext(ctx, `SELECT id, name, state, progress, owner FROM project
+	WHERE id = $1`, projectID)
+	project := &entity.Project{}
+	var state *int
+
+	err := row.Scan(
+		&project.ID,
+		&project.Name,
+		&state,
+		&project.Progress,
+		&project.Owner.ID,
+	)
+
+	if err != nil {
+		log.Printf("Error in geting project %v", err)
+		return nil, err
+	}
+	project.State = entity.StateName[*state]
+
+	owner, err := employee.GetEmployee(project.Owner.ID)
+	if err != nil {
+		log.Printf("Error in geting employee using uuid %v", project.Owner.ID)
+		return nil, err
+	}
+	project.Owner = *owner
+	results, err := database.DbConn.QueryContext(ctx, `SELECT project_employee.employee_id FROM project 
+	join project_employee ON project_employee.project_id = project.id
+	WHERE project.id = $1`, projectID)
+	defer results.Close()
+	if err != nil {
+		log.Println("Error in getProject", err)
+		return nil, err
+	}
+	var employeeIDS []string
+	for results.Next() {
+		var id string
+		results.Scan(&id)
+		employeeIDS = append(employeeIDS, id)
+	}
+	for _, id := range employeeIDS {
+		emp, err := employee.GetEmployee(id)
+		if err != nil {
+			log.Printf("Error in geting employee using uuid %v", id)
+		}
+		project.Participants = append(project.Participants, *emp)
+	}
+	return project, nil
+}
+
+func removeProject(productID int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	_, err := database.DbConn.ExecContext(ctx, `DELETE FROM project where id = $1 RETURNING id`, productID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
