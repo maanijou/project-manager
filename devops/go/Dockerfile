@@ -30,8 +30,8 @@ RUN cp /build/main .
 EXPOSE 8080
 
 # Command to run when starting the container this is best for production
-# CMD ["/dist/main"]
+CMD ["/dist/main"]
 
 # Development version
-WORKDIR /build
-CMD ["go", "run", "/build/main.go"]
+# WORKDIR /build
+# CMD ["go", "run", "/build/main.go"]
