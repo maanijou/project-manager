@@ -11,22 +11,23 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/maanijou/project-manager/employee"
+	"github.com/maanijou/project-manager/entity"
 )
 
 func TestEmployeeStruct(t *testing.T) {
-	emp := employee.Employee{}
+	emp := entity.Employee{}
 	emp.ID = "b82522f0-8644-4c65-a552-9c6b8a9e4b6f"
 	emp.FirstName = "first"
 	emp.LastName = "last"
 	emp.Email = "e@example.com"
-	emp.Role = employee.ManagerRole
-	emp.Department = employee.Engineering
+	emp.Role = entity.ManagerRole
+	emp.Department = entity.Engineering
 
 	j, err := json.Marshal(emp)
 	if err != nil {
 		t.Errorf("Could not marshal the employee object %v", emp)
 	}
-	got := employee.Employee{}
+	got := entity.Employee{}
 	err = json.Unmarshal(j, &got)
 	if err != nil {
 		t.Errorf("Could not Unmarshal the employee object %v", emp)
@@ -41,7 +42,7 @@ func TestEmployeeStruct(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error checking role: %v", err)
 	}
-	emp.Role = employee.ManagerRole
+	emp.Role = entity.ManagerRole
 	emp.Department = "other"
 	j, err = json.Marshal(emp)
 	err = json.Unmarshal(j, &got)
@@ -53,13 +54,13 @@ func TestEmployeeStruct(t *testing.T) {
 }
 
 func TestGetEmployeeData(t *testing.T) {
-	var expect *employee.Employee = &employee.Employee{}
+	var expect *entity.Employee = &entity.Employee{}
 	expect.ID = "b82522f0-8644-4c65-a552-9c6b8a9e4b6f"
 	expect.FirstName = ""
 	expect.LastName = "Simenot"
 	expect.Email = "simenot@acme.com"
-	expect.Role = employee.ManagerRole
-	expect.Department = employee.Marketing
+	expect.Role = entity.ManagerRole
+	expect.Department = entity.Marketing
 
 	got, err := employee.GetEmployee("b82522f0-8644-4c65-a552-9c6b8a9e4b6f")
 	if err != nil {
@@ -145,7 +146,7 @@ func TestGetEmployeesHandler(t *testing.T) {
 		}
 
 		// Check the response body is what we expect.
-		var employees employee.Employees
+		var employees entity.Employees
 		err = json.Unmarshal(rr.Body.Bytes(), &employees)
 		if err != nil {
 			t.Errorf("Error Unmarshaling json response in Scenario %d:", i)

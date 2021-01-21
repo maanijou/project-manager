@@ -1,11 +1,9 @@
-package project
+package entity
 
 import (
 	"encoding/json"
 	"errors"
 	"log"
-
-	"github.com/maanijou/project-manager/employee"
 )
 
 // StateType is string
@@ -44,12 +42,12 @@ func (x StateType) Int() int {
 
 // Project is a struct for handling projects
 type Project struct {
-	ID           uint                `json:"id"`
-	Name         string              `json:"name"`
-	Owner        employee.Employee   `json:"owner"`
-	State        StateType           `json:"state"`
-	Progress     int                 `json:"progress,omitempty"`
-	Participants []employee.Employee `json:"participants" `
+	ID           uint       `json:"id"`
+	Name         string     `json:"name"`
+	Owner        Employee   `json:"owner"`
+	State        StateType  `json:"state"`
+	Progress     int        `json:"progress,omitempty"`
+	Participants []Employee `json:"participants" `
 }
 
 // UnmarshalJSON for Project

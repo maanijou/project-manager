@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/maanijou/project-manager/entity"
 )
 
 // TODO handle empty employees
@@ -67,7 +68,7 @@ func GetAllEmployees(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(employees.Data) < ((page - 1) * limit) {
-		employees.Data = []*Employee{}
+		employees.Data = []*entity.Employee{}
 	} else if len(employees.Data) < ((page) * limit) {
 		employees.Data = employees.Data[(page-1)*limit:]
 	} else {
