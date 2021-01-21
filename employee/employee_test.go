@@ -12,6 +12,7 @@ func TestEmployeeStruct(t *testing.T) {
 	emp.ID = "b82522f0-8644-4c65-a552-9c6b8a9e4b6f"
 	emp.FirstName = "first"
 	emp.LastName = "last"
+	emp.Email = "e@example.com"
 	emp.Role = employee.ManagerRole
 	emp.Department = employee.Engineering
 
@@ -46,9 +47,30 @@ func TestEmployeeStruct(t *testing.T) {
 }
 
 func TestGetEmployeeData(t *testing.T) {
-	t.Errorf("Not implemented\n")
+	var expect *employee.Employee = &employee.Employee{}
+	expect.ID = "b82522f0-8644-4c65-a552-9c6b8a9e4b6f"
+	expect.FirstName = ""
+	expect.LastName = "Simenot"
+	expect.Email = "simenot@acme.com"
+	expect.Role = employee.ManagerRole
+	expect.Department = employee.Marketing
+
+	got, err := employee.GetEmployee("b82522f0-8644-4c65-a552-9c6b8a9e4b6f")
+	if err != nil {
+		t.Errorf("Error getting emp from External server")
+	}
+	if *got != *expect {
+		t.Errorf("Error getting expected employee %v != %v", got, expect)
+	}
 }
 
 func TestGetEmployeeByIDHandler(t *testing.T) {
-	t.Errorf("Not implemented\n")
+	emps, err := employee.GetEmployees()
+	if err != nil {
+		t.Errorf("Error in getting employees %v", err)
+	}
+	if len(emps.Data) != 100 {
+		t.Errorf("Error in getting employees, expected 100 employees got %d", len(emps.Data))
+	}
+
 }
