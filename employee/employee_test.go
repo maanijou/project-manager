@@ -27,4 +27,20 @@ func TestEmployeeStruct(t *testing.T) {
 	if got != emp {
 		t.Errorf("Unmarshal version of employee differs from the original %v != %v", got, emp)
 	}
+
+	emp.Role = "other"
+	j, err = json.Marshal(emp)
+	err = json.Unmarshal(j, &got)
+	if err == nil {
+		t.Errorf("Expected error checking role: %v", err)
+	}
+	emp.Role = employee.ManagerRole
+	emp.Department = "other"
+	j, err = json.Marshal(emp)
+	err = json.Unmarshal(j, &got)
+
+	if err == nil {
+		t.Errorf("Expected error checking Department: %v", err)
+	}
+
 }

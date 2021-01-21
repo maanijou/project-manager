@@ -1,5 +1,11 @@
 package employee
 
+import (
+	"encoding/json"
+	"errors"
+	"log"
+)
+
 // DepartmentType type (int)
 type DepartmentType string
 
@@ -41,7 +47,36 @@ type Employee struct {
 	Role       RoleType       `json:"role,omitempty"`
 }
 
-// Employees is an aray of type Employee
+// Employees is an array of type Employee
 type Employees struct {
 	Data []*Employee `json:"data"`
+}
+
+// UnmarshalJSON is
+func (s *Employee) UnmarshalJSON(data []byte) error {
+	// Define a secondary type so that we don't end up with a recursive call to json.Unmarshal
+	type Aux Employee
+	var a *Aux = (*Aux)(s)
+	err := json.Unmarshal(data, &a)
+	if err != nil {
+		log.Println("Error in UnmarshalJSON", err)
+		return err
+	}
+
+	// Validate the valid enum values
+	switch s.Department {
+	case Engineering, Marketing, Sales, "":
+	default:
+		log.Println("Error in UnmarshalJSON, invalid value for Department")
+		return errors.New("invalid value for Department")
+	}
+
+	// Validate the valid enum values
+	switch s.Role {
+	case ManagerRole, EmployeeRole, "":
+		return nil
+	default:
+		log.Println("Error UnmarshalJSON, invalid value for Role")
+		return errors.New("invalid value for Role")
+	}
 }
