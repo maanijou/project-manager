@@ -9,12 +9,16 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
+	"github.com/maanijou/project-manager/database"
 	"github.com/maanijou/project-manager/employee"
+	"github.com/maanijou/project-manager/project"
 )
 
 func main() {
 	log.Println("Running Project Manager app.")
-
+	log.Println("Setup database...")
+	database.SetupDatabase()
 	sm := mux.NewRouter().StrictSlash(true) // ignoring trailing slash
 	sm = sm.PathPrefix("/api/v1/").Subrouter()
 	sm.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +27,7 @@ func main() {
 		w.Write([]byte(`{"status": "ok"}`))
 	})
 	employee.SetupRoutes(sm)
+	project.SetupRoutes(sm)
 
 	s := http.Server{
 		Addr:         ":8080",           // configure the bind address
