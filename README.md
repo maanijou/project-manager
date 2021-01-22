@@ -1,4 +1,4 @@
-# project-manager
+# Project Management
 
 Managing your projects efficiently.
 
@@ -64,3 +64,5 @@ I decided not to show participants on projects route
 - [ ] For some improvements, a caching mechanism for fetching data from external API can be applied.
 - [ ] Using swagger for both getting data from external API and designing. A nice automatic documentation would be generated as well.
 - [ ] Showing useful messages when departments are different between participants and the owner (For now, we won't add them without showing any particular error).
+- [ ] Writing test codes for project API's
+- [ ] CI/CD
