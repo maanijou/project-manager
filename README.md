@@ -30,6 +30,7 @@ You can use make file commands to run the project.
 * make bash_go: Start sh on app image
 
 ## Available routes and methods
+By default, docker-compose exposes the API on port 3000.
 
 GET:
 * `/api/v1/health`: To get check API health and availability.
