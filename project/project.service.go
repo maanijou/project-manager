@@ -130,7 +130,6 @@ func updateProjectRoute(w http.ResponseWriter, r *http.Request) {
 	log.Println(eerr)
 
 	defer r.Body.Close()
-	log.Println("data", string(data))
 	var project entity.Project
 	// err := json.NewDecoder(r.Body).Decode(&project)
 	err := json.Unmarshal(data, &project)
@@ -139,7 +138,6 @@ func updateProjectRoute(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("This is the project %v", project)
 	projectID, err := updateProject(project)
 	if err != nil {
 		log.Print(err)

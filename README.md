@@ -1,7 +1,6 @@
 # project-manager
 
-Managing your projects easily
-
+Managing your projects efficiently.
 
 ## Devops
 
@@ -13,7 +12,7 @@ You have to define a `database.env` file in your root folder so that everything 
 
 ## Handling external API
 
-For external API's there are multiple scenarios and approaches. One can synchronize data between two services. In a microservice architecture, it's always good to have separate data storage and handle them separately. So rather than getting all the employees' data and saving them locally, I'm going to handle table joins and data dependencies at the app level. In this sence this app works as an API Gateway for different microservices.
+For external API's there are multiple scenarios and approaches. One can synchronize data between two services. In a microservice architecture, it's always good to have separate data storage and handle them separately. So rather than getting all the employees' data and saving them locally, I'm going to handle table joins and data dependencies at the app level. In this sense, this app works as an API Gateway for different microservices.
 
 ## Running Instructions
 
@@ -31,6 +30,9 @@ You can use make file commands to run the project.
 * make bash_go: Start sh on app image
 
 ## Available routes and methods
+
+GET:
+* `/api/v1/health`: To get check API health and availability.
 
 ### Employee
 
