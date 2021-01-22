@@ -2,6 +2,8 @@
 
 Managing your projects efficiently.
 
+![example workflow name](https://github.com/maanijou/project-manager/workflows/Go/badge.svg)
+
 ## Devops
 
 `docker` and `docker-compose` are used to handle docker images like a database. I used pgadmin for some database management tasks as well.
