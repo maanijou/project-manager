@@ -69,3 +69,4 @@ I decided not to show participants on projects route
 - [ ] Showing useful messages when departments are different between participants and the owner (For now, we won't add them without showing any particular error).
 - [ ] Writing test codes for project API's
 - [ ] Add CORS
+- [ ] Add JWT based authentication.
