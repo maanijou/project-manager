@@ -35,7 +35,7 @@ You can use make file commands to run the project.
 By default, docker-compose exposes the API on port 3000.
 
 GET:
-* `/api/v1/health`: To get check API health and availability.
+* `/api/v1/health`: To check API health and availability.
 
 ### Employee
 
