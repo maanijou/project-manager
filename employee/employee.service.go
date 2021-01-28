@@ -15,7 +15,11 @@ import (
 func GetEmployeeByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	eml, err := GetEmployee(vars["user_id"])
-
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	data, err := json.Marshal(eml)
 	if err != nil {
 		log.Print(err)
