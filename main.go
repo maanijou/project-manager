@@ -19,6 +19,8 @@ func main() {
 	log.Println("Running Project Manager app.")
 	log.Println("Setup database...")
 	database.SetupDatabase()
+	defer database.DbConn.Close()
+
 	sm := mux.NewRouter().StrictSlash(true) // ignoring trailing slash
 	sm = sm.PathPrefix("/api/v1/").Subrouter()
 	sm.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
