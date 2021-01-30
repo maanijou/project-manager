@@ -126,13 +126,18 @@ func deleteProjectRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateProjectRoute(w http.ResponseWriter, r *http.Request) {
-	data, eerr := ioutil.ReadAll(r.Body)
-	log.Println(eerr)
+	data, err := ioutil.ReadAll(r.Body)
+	log.Println(err)
+	if err != nil {
+		log.Println("Error in getting body response:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	defer r.Body.Close()
 	var project entity.Project
 	// err := json.NewDecoder(r.Body).Decode(&project)
-	err := json.Unmarshal(data, &project)
+	err = json.Unmarshal(data, &project)
 	if err != nil {
 		log.Println("Error in json decoder:", err)
 		w.WriteHeader(http.StatusBadRequest)
